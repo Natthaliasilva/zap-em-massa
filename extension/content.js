@@ -90,10 +90,36 @@
     location.href = url;
   }
 
+  function findBox() {
+    return document.querySelector('footer div[contenteditable="true"]') ||
+      document.querySelector('#main div[contenteditable="true"][role="textbox"]');
+  }
   function findSend() {
-    return document.querySelector('[data-icon="send"]')?.closest("button,[role=button]") ||
-      document.querySelector('[data-icon="wds-ic-send-filled"]')?.closest("button,[role=button]") ||
-      document.querySelector('button[aria-label="Enviar"],button[aria-label="Send"]');
+    const icon = document.querySelector('#main [data-icon="send"], #main [data-icon="wds-ic-send-filled"], footer [data-icon="send"], footer [data-icon="wds-ic-send-filled"]');
+    if (icon) return icon.closest("button,[role=button]") || icon.parentElement;
+    return document.querySelector('#main [aria-label="Enviar"], #main [aria-label="Send"], footer [aria-label="Enviar"], footer [aria-label="Send"]');
+  }
+  function realClick(el) {
+    for (const t of ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]) {
+      el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window }));
+    }
+  }
+  function pressEnter(box) {
+    box.focus();
+    const o = { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true, cancelable: true };
+    box.dispatchEvent(new KeyboardEvent("keydown", o));
+    box.dispatchEvent(new KeyboardEvent("keypress", o));
+    box.dispatchEvent(new KeyboardEvent("keyup", o));
+  }
+  async function trySend() {
+    const box = findBox();
+    if (!box || !box.innerText.trim()) return false;
+    await sleep(1200);
+    const b = findSend();
+    if (b) realClick(b); else pressEnter(box);
+    await sleep(2000);
+    if (findBox()?.innerText.trim()) { pressEnter(findBox()); await sleep(2000); }
+    return !findBox()?.innerText.trim();
   }
   function invalidPopup() {
     const t = document.querySelector('[role="dialog"], [data-animate-modal-popup="true"]')?.innerText || "";
@@ -112,8 +138,7 @@
     const start = Date.now();
     while (Date.now() - start < 45000) {
       if (invalidPopup()) { err = "número inválido"; break; }
-      const b = findSend();
-      if (b) { await sleep(800); b.click(); ok = true; await sleep(2500); break; }
+      if (findBox()?.innerText.trim()) { ok = await trySend(); if (!ok) err = "não conseguiu clicar em enviar"; break; }
       await sleep(700);
     }
     if (!ok && !err) err = "tempo esgotado";
