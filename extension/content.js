@@ -91,17 +91,43 @@
   }
 
   function findBox() {
-    return document.querySelector('footer div[contenteditable="true"]') ||
-      document.querySelector('#main div[contenteditable="true"][role="textbox"]');
+    const boxes = [...document.querySelectorAll('#main footer div[contenteditable="true"], #main div[contenteditable="true"][role="textbox"]')];
+    return boxes.find(box => box.getAttribute("aria-label")?.match(/mensagem|message/i)) || boxes.at(-1) || null;
   }
   function findSend() {
-    const icon = document.querySelector('#main [data-icon="send"], #main [data-icon="wds-ic-send-filled"], footer [data-icon="send"], footer [data-icon="wds-ic-send-filled"]');
-    if (icon) return icon.closest("button,[role=button]") || icon.parentElement;
-    return document.querySelector('#main [aria-label="Enviar"], #main [aria-label="Send"], footer [aria-label="Enviar"], footer [aria-label="Send"]');
+    const roots = [document.querySelector("#main footer"), document.querySelector("#main")].filter(Boolean);
+    const selectors = [
+      'button[aria-label="Enviar"]', 'button[aria-label="Send"]',
+      '[role="button"][aria-label="Enviar"]', '[role="button"][aria-label="Send"]',
+      'button[data-testid="compose-btn-send"]', '[data-testid="compose-btn-send"]',
+      '[data-icon="send"]', '[data-icon="wds-ic-send-filled"]',
+      '[data-icon*="send"]'
+    ];
+    for (const root of roots) {
+      for (const selector of selectors) {
+        const found = root.querySelector(selector);
+        if (found) return found.closest("button,[role=button]") || found;
+      }
+      const labelled = [...root.querySelectorAll("button,[role=button]")].find(el =>
+        /^(enviar|send)$/i.test((el.getAttribute("aria-label") || el.getAttribute("title") || "").trim())
+      );
+      if (labelled) return labelled;
+    }
+    return null;
+  }
+  function wakeComposer(box) {
+    box.focus();
+    box.dispatchEvent(new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "insertText", data: "" }));
+    box.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: "" }));
+    box.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: box.innerText || box.textContent || "" }));
   }
   function realClick(el) {
+    el.scrollIntoView({ block: "center", inline: "center" });
+    el.focus();
+    el.click();
     for (const t of ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]) {
-      el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true, view: window }));
+      const EventType = t.startsWith("pointer") && window.PointerEvent ? PointerEvent : MouseEvent;
+      el.dispatchEvent(new EventType(t, { bubbles: true, cancelable: true, composed: true, view: window, button: 0, buttons: t.endsWith("down") ? 1 : 0 }));
     }
   }
   function pressEnter(box) {
@@ -113,13 +139,22 @@
   }
   async function trySend() {
     const box = findBox();
-    if (!box || !box.innerText.trim()) return false;
-    await sleep(1200);
-    const b = findSend();
+    const text = box?.innerText || box?.textContent || "";
+    if (!box || !text.trim()) return false;
+    wakeComposer(box);
+    await sleep(900);
+    let b = findSend();
     if (b) realClick(b); else pressEnter(box);
-    await sleep(2000);
-    if (findBox()?.innerText.trim()) { pressEnter(findBox()); await sleep(2000); }
-    return !findBox()?.innerText.trim();
+    await sleep(1800);
+    let current = findBox();
+    if ((current?.innerText || current?.textContent || "").trim()) {
+      wakeComposer(current);
+      b = findSend();
+      if (b) realClick(b); else pressEnter(current);
+      await sleep(1800);
+    }
+    current = findBox();
+    return !(current?.innerText || current?.textContent || "").trim();
   }
   function invalidPopup() {
     const t = document.querySelector('[role="dialog"], [data-animate-modal-popup="true"]')?.innerText || "";
