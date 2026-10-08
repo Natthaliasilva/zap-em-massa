@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Recruta Zap - Envio em Massa",
+  "version": "1.0.0",
+  "description": "Envio de mensagens personalizadas em massa no WhatsApp Web para recrutamento.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://web.whatsapp.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://web.whatsapp.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
