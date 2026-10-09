@@ -1,6 +1,6 @@
 # Recruit Sender
 
-Faça uma extensão para usar no WhatsApp web no navegador para disparar mensagem em massa, o intuito é usar para recrutamento em vagas de emprego sou do RH, enviei imagens de um que gostei, quero ele simples e priorize o funcionamento por colar os números e nomes para por na mensagem automação que coloca o nome da pessoa do numero automático na mensagem, então será só colar o numero mais o nome em formato de coluna aceitando colar a copia de uma planilha. Nesse momento se não tiver credito suficiente priorize o funcionamento imediato de envio em massa.
+Faça uma extensão para usar no WhatsApp web no navegador para disparar mensagem em massa, o intuito é usar para recrutamento em vagas de emprego.
 
 This project was built with [Lovable](https://lovable.dev).
 
