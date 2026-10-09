@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep extension UI and launcher positioning in the content script, using chrome.storage.local for saved placement, so placement persists across WhatsApp navigation without a server.
+- Track the contact being opened in chrome.storage.local (rz_state.pending), not the page URL, because WhatsApp Web strips the ?phone= query after load.
