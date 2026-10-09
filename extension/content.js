@@ -156,8 +156,13 @@
   $("rz-stop").onclick = async () => { const s = await get(); if (s) { s.running = false; await set(s); render(s); } };
   $("rz-clear").onclick = async () => { await set(null); render(null); };
 
-  function goTo(s) {
+  // WhatsApp Web removes "?phone=" from the address bar after loading, so the
+  // contact being opened is remembered in storage instead of read from the URL.
+  async function goTo(s) {
     const c = s.queue[s.index];
+    const tries = s.pending && s.pending.index === s.index ? (s.pending.tries || 0) + 1 : 1;
+    s.pending = { index: s.index, phone: c.phone, at: Date.now(), tries };
+    await set(s);
     const url = `https://web.whatsapp.com/send?phone=${c.phone}&text=${encodeURIComponent(fill(s.msg, c.name))}`;
     location.href = url;
   }
@@ -239,19 +244,29 @@
     if (!s || !s.running) return;
     if (s.index >= s.queue.length) { s.running = false; await set(s); render(s); panel.classList.add("open"); return; }
     const c = s.queue[s.index];
-    if (!location.href.includes("phone=" + c.phone)) { await sleep(3000); return goTo(s); }
+    const opened = s.pending && s.pending.index === s.index && s.pending.phone === c.phone && Date.now() - s.pending.at < 120000;
+    if (!opened) {
+      if (s.pending && s.pending.index === s.index && (s.pending.tries || 0) >= 2) {
+        s.log.push({ phone: c.phone, name: c.name, ok: false, err: "conversa não abriu" });
+        s.index++; s.pending = null;
+        if (s.index >= s.queue.length) { s.running = false; await set(s); render(s); return; }
+      }
+      await sleep(1500); return goTo(s);
+    }
     panel.classList.add("open");
     let ok = false, err = "";
     const start = Date.now();
-    while (Date.now() - start < 45000) {
+    while (Date.now() - start < 60000) {
       if (invalidPopup()) { err = "número inválido"; break; }
-      if (findBox()?.innerText.trim()) { ok = await trySend(); if (!ok) err = "não conseguiu clicar em enviar"; break; }
+      const box = findBox();
+      if ((box?.innerText || box?.textContent || "").trim()) { await sleep(1200); ok = await trySend(); if (!ok) err = "não conseguiu clicar em enviar"; break; }
       await sleep(700);
     }
     if (!ok && !err) err = "tempo esgotado";
     s = await get();
     if (!s) return;
     s.log.push({ phone: c.phone, name: c.name, ok, err });
+    s.pending = null;
     s.index++;
     if (s.index >= s.queue.length) s.running = false;
     await set(s); render(s);
