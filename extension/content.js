@@ -52,7 +52,79 @@
     <div id="rz-log"></div>`;
   document.body.append(toggle, panel);
   const $ = id => panel.querySelector("#" + id);
-  toggle.onclick = () => panel.classList.toggle("open");
+  // Keep the launcher and its panel inside the viewport; remember user placement.
+  let position = { x: 18, y: 18 };
+  let drag = null;
+  let suppressClick = false;
+  let positionChanged = false;
+  const clamp = (value, max) => Math.max(8, Math.min(value, Math.max(8, max)));
+  function placePanel() {
+    if (!panel.classList.contains("open")) return;
+    const rect = toggle.getBoundingClientRect();
+    panel.style.maxHeight = Math.max(80, window.innerHeight - rect.height - 32) + "px";
+    const below = rect.bottom + 10;
+    const y = below + panel.offsetHeight <= window.innerHeight - 8 ? below : rect.top - panel.offsetHeight - 10;
+    panel.style.left = clamp(rect.left, window.innerWidth - panel.offsetWidth - 8) + "px";
+    panel.style.top = clamp(y, window.innerHeight - panel.offsetHeight - 8) + "px";
+  }
+  function placeButton() {
+    position.x = clamp(position.x, window.innerWidth - toggle.offsetWidth - 8);
+    position.y = clamp(position.y, window.innerHeight - toggle.offsetHeight - 8);
+    toggle.style.left = position.x + "px";
+    toggle.style.top = position.y + "px";
+    placePanel();
+  }
+  const savePosition = () => chrome.storage.local.set({ rz_button_position: position });
+  toggle.title = "Arraste para reposicionar; clique para abrir";
+  toggle.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    suppressClick = false;
+    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, left: position.x, top: position.y, moved: false };
+    toggle.setPointerCapture(event.pointerId);
+  });
+  toggle.addEventListener("pointermove", event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+    drag.moved = true;
+    positionChanged = true;
+    suppressClick = true;
+    toggle.classList.add("rz-dragging");
+    position = { x: drag.left + dx, y: drag.top + dy };
+    placeButton();
+  });
+  const finishDrag = event => {
+    if (!drag || drag.id !== event.pointerId) return;
+    if (drag.moved) savePosition();
+    drag = null;
+    toggle.classList.remove("rz-dragging");
+  };
+  toggle.addEventListener("pointerup", finishDrag);
+  toggle.addEventListener("pointercancel", finishDrag);
+  toggle.addEventListener("lostpointercapture", finishDrag);
+  toggle.onclick = event => {
+    if (suppressClick && event.detail !== 0) { suppressClick = false; return; }
+    suppressClick = false;
+    panel.classList.toggle("open");
+    placePanel();
+  };
+  toggle.addEventListener("keydown", event => {
+    const steps = { ArrowLeft: [-10, 0], ArrowRight: [10, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] };
+    const step = steps[event.key];
+    if (!step) return;
+    event.preventDefault();
+    positionChanged = true;
+    position = { x: position.x + step[0], y: position.y + step[1] };
+    placeButton();
+    savePosition();
+  });
+  chrome.storage.local.get("rz_button_position", data => {
+    const saved = data.rz_button_position;
+    if (!positionChanged && saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) position = saved;
+    placeButton();
+  });
+  window.addEventListener("resize", placeButton);
+  new MutationObserver(placePanel).observe(panel, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
 
   chrome.storage.local.get(["rz_draft"], d => {
     const dr = d.rz_draft || {};
