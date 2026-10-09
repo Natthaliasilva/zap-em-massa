@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep extension UI and launcher positioning in the content script, using chrome.storage.local for saved placement, so placement persists across WhatsApp navigation without a server.
