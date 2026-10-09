@@ -201,7 +201,6 @@
   function realClick(el) {
     el.scrollIntoView({ block: "center", inline: "center" });
     el.focus();
-    el.click();
     for (const t of ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]) {
       const EventType = t.startsWith("pointer") && window.PointerEvent ? PointerEvent : MouseEvent;
       el.dispatchEvent(new EventType(t, { bubbles: true, cancelable: true, composed: true, view: window, button: 0, buttons: t.endsWith("down") ? 1 : 0 }));
@@ -223,13 +222,8 @@
     let b = findSend();
     if (b) realClick(b); else pressEnter(box);
     await sleep(1800);
-    let current = findBox();
-    if ((current?.innerText || current?.textContent || "").trim()) {
-      wakeComposer(current);
-      b = findSend();
-      if (b) realClick(b); else pressEnter(current);
-      await sleep(1800);
-    }
+    await sleep(1500);
+    let current;
     current = findBox();
     return !(current?.innerText || current?.textContent || "").trim();
   }
