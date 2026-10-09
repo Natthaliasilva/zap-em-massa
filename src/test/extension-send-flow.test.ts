@@ -22,20 +22,20 @@ describe("extension send flow", () => {
   });
 
   it("keeps working on the opened chat after WhatsApp removes the number from the address", async () => {
-    store.rz_state = running({ index: 0, phone: "5521967473033", at: Date.now(), tries: 1 });
+    store["rz_state"] = running({ index: 0, phone: "5521967473033", at: Date.now(), tries: 1 });
     window.eval(source);
     await vi.advanceTimersByTimeAsync(2100);
     expect(document.getElementById("rz-panel")!.classList.contains("open")).toBe(true);
-    expect((store.rz_state as { pending: { tries: number } }).pending.tries).toBe(1);
+    expect((store["rz_state"] as { pending: { tries: number } }).pending.tries).toBe(1);
   });
 
   it("gives up on a contact whose chat did not open after repeated attempts", async () => {
-    store.rz_state = running({ index: 0, phone: "5521967473033", at: Date.now() - 600000, tries: 2 });
+    store["rz_state"] = running({ index: 0, phone: "5521967473033", at: Date.now() - 600000, tries: 2 });
     window.eval(source);
     await vi.advanceTimersByTimeAsync(2100);
-    const s = store.rz_state as { index: number; running: boolean; log: { err: string }[] };
+    const s = store["rz_state"] as { index: number; running: boolean; log: { err: string }[] };
     expect(s.index).toBe(1);
     expect(s.running).toBe(false);
-    expect(s.log[0].err).toBe("conversa não abriu");
+    expect(s.log[0]?.err).toBe("conversa não abriu");
   });
 });
