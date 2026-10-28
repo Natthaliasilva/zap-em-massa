@@ -30,11 +30,11 @@
 
   // ---------- UI ----------
   const toggle = document.createElement("button");
-  toggle.id = "rz-toggle"; toggle.textContent = "📨 Envio em massa";
+  toggle.id = "rz-toggle"; toggle.textContent = "📢";
   const panel = document.createElement("div");
   panel.id = "rz-panel";
   panel.innerHTML = `
-    <h3>Recruta Zap · Envio em massa</h3>
+    <h3>Envio em massa</h3>
     <label>Contatos <small>(cole da planilha: número e nome, uma pessoa por linha)</small></label>
     <textarea id="rz-list" rows="6" placeholder="11999998888	Maria Souza&#10;21988887777	João Lima"></textarea>
     <div id="rz-count"><small>0 contatos</small></div>
