@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'extensão/**'
+      - 'extension/**'
       - '.github/workflows/atualizar-zip.yml'
 
 permissions:
@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir -p public
           rm -f public/recruta-zap.zip
-          cd extensão
+          cd extension
           zip -r ../public/recruta-zap.zip .
 
       - name: Salvar ZIP no GitHub
