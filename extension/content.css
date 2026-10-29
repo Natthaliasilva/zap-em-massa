@@ -1,4 +1,4 @@
-#rz-toggle{position:fixed;left:18px;top:18px;z-index:99999;background:#006400;color:#fff;border:none;border-radius:50px;padding:12px 18px;font:600 14px Arial;cursor:grab;touch-action:none;user-select:none;max-width:calc(100vw - 16px);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#rz-toggle{position:fixed;left:18px;top:18px;z-index:99999;background:#006400;color:#fff;border:none;border-radius:50%;width:42px;height:42px;padding:0;font:600 20px Arial;cursor:grab;touch-action:none;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
 #rz-toggle.rz-dragging{cursor:grabbing}
 #rz-panel{position:fixed;left:18px;top:72px;z-index:99999;width:380px;max-width:calc(100vw - 16px);box-sizing:border-box;max-height:calc(100vh - 16px);overflow:auto;background:#fff;color:#111;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.3);font:13px Arial;padding:16px;display:none}
 #rz-panel.open{display:block}
