@@ -14,7 +14,7 @@ Desenvolvida principalmente para recrutadores e profissionais de RH, facilita o 
 
 - Agilidade na comunicação com candidatos.
 
-Tecnologias
+**Tecnologias**
 
 Projeto desenvolvido com apoio do Lovable, com código-fonte versionado no GitHub.
 [Lovable](https://lovable.dev).
