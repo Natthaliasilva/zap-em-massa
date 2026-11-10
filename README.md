@@ -21,9 +21,6 @@ Projeto desenvolvido com apoio do Lovable, com código-fonte versionado no GitHu
 
 **Baixe aqui**: https://send-joy-whisper.lovable.app
 
-## Build with Lovable
-
-
 ## Desenvolvimento local
 
 Prefere trabalhar localmente? Você precisa do Node.js e do npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
